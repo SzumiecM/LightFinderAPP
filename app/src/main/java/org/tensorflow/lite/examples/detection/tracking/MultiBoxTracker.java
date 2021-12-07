@@ -29,6 +29,7 @@ import android.util.Pair;
 import android.util.TypedValue;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 import org.tensorflow.lite.examples.detection.env.BorderedText;
 import org.tensorflow.lite.examples.detection.env.ImageUtils;
@@ -39,23 +40,6 @@ import org.tensorflow.lite.examples.detection.tflite.Detector.Recognition;
 public class MultiBoxTracker {
   private static final float TEXT_SIZE_DIP = 18;
   private static final float MIN_SIZE = 16.0f;
-  private static final int[] COLORS = {
-    Color.BLUE,
-    Color.RED,
-    Color.GREEN,
-    Color.YELLOW,
-    Color.CYAN,
-    Color.MAGENTA,
-    Color.WHITE,
-    Color.parseColor("#55FF55"),
-    Color.parseColor("#FFA500"),
-    Color.parseColor("#FF8888"),
-    Color.parseColor("#AAAAFF"),
-    Color.parseColor("#FFFFAA"),
-    Color.parseColor("#55AAAA"),
-    Color.parseColor("#AA33AA"),
-    Color.parseColor("#0D0068")
-  };
   final List<Pair<Float, RectF>> screenRects = new LinkedList<Pair<Float, RectF>>();
   private final Logger logger = new Logger();
   private final Queue<Integer> availableColors = new LinkedList<Integer>();
@@ -69,10 +53,6 @@ public class MultiBoxTracker {
   private int sensorOrientation;
 
   public MultiBoxTracker(final Context context) {
-    for (final int color : COLORS) {
-      availableColors.add(color);
-    }
-
     boxPaint.setColor(Color.RED);
     boxPaint.setStyle(Style.STROKE);
     boxPaint.setStrokeWidth(10.0f);
@@ -192,11 +172,22 @@ public class MultiBoxTracker {
       final TrackedRecognition trackedRecognition = new TrackedRecognition();
       trackedRecognition.detectionConfidence = potential.first;
       trackedRecognition.location = new RectF(potential.second.getLocation());
-      trackedRecognition.title = potential.second.getTitle();
-      trackedRecognition.color = COLORS[trackedObjects.size()];
+      String title = potential.second.getTitle();
+      trackedRecognition.title = title;
+
+      int color;
+      if (Objects.equals(title, "green")){
+        color = Color.GREEN;
+      } else if (Objects.equals(title, "red")) {
+        color = Color.RED;
+      } else {
+        color = Color.BLACK;
+      }
+
+      trackedRecognition.color = color;
       trackedObjects.add(trackedRecognition);
 
-      if (trackedObjects.size() >= COLORS.length) {
+      if (trackedObjects.size() >= 10) {
         break;
       }
     }
